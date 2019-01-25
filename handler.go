@@ -39,7 +39,7 @@ func Publish(c *gin.Context) {
 	}
 
 	if !authCheckNew(req.Type, req.UID, req.UserSig) {
-		fmt.Println("Auth check Failed")
+		fmt.Println("Auth check Failed", req.Type, req.UID, req.UserSig)
 		c.AbortWithStatus(http.StatusOK)
 		return
 	}
