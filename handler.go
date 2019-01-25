@@ -15,9 +15,22 @@ const (
 	Failed
 )
 
+// PublishReq request of publish
+type PublishReq struct {
+	Type    int    `json:"type"`
+	UID     string `json:"uid"`
+	UserSig string `json:"user_sig"`
+}
+
+// PublishResp response of publish
+type PublishResp struct {
+	Code  int    `json:"code"`
+	Param string `json:"param"`
+}
+
 // Publish publish
 func Publish(c *gin.Context) {
-	req := make(map[string]interface{})
+	req := PublishReq{}
 	err := c.Bind(&req)
 	if err != nil {
 		fmt.Println("Publish Failed")
@@ -25,15 +38,26 @@ func Publish(c *gin.Context) {
 		return
 	}
 
-	params, ok := req["param"].(string)
-	if !ok || !authCheck(params) {
+	if !authCheckNew(req.Type, req.UID, req.UserSig) {
 		fmt.Println("Auth check Failed")
 		c.AbortWithStatus(http.StatusOK)
 		return
 	}
 
+	// params, ok := req["param"].(string)
+	// if !ok || !authCheck(params) {
+	// 	fmt.Println("Auth check Failed")
+	// 	c.AbortWithStatus(http.StatusOK)
+	// 	return
+	// }
+
+	resp := PublishResp{
+		Code:  0,
+		Param: "bizid=33872&txSecret=c58c493595da79cec7a05cee51bc5478&txTime=5C531B7F",
+	}
+
 	fmt.Printf("Req: %+v\n", req)
-	c.JSON(http.StatusOK, Success)
+	c.JSON(http.StatusOK, resp)
 	return
 }
 
@@ -83,7 +107,7 @@ func authCheck(paramsStr string) bool {
 	params := getParams(paramsStr)
 	fmt.Println("Params:", params)
 
-	if params["spUserID"] != "admin" {
+	if params["uid"] != "shopee" {
 		return false
 	}
 	return true
@@ -106,4 +130,11 @@ func getParams(paramsStr string) map[string]string {
 	}
 
 	return params
+}
+
+func authCheckNew(streamingType int, uid string, userSig string) bool {
+	if uid != "shopee" {
+		return false
+	}
+	return true
 }
